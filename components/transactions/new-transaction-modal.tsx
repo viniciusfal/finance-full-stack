@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { Modal } from '@/components/ui/modal'
 import { Input } from '@/components/ui/input'
+import { NumberInput } from '@/components/ui/number-input'
 import { Button } from '@/components/ui/button'
 import { createTransaction } from '@/lib/actions/transactions'
 import { ArrowDownCircle, ArrowUpCircle } from 'lucide-react'
@@ -21,6 +22,7 @@ export function NewTransactionModal({
   categories,
 }: NewTransactionModalProps) {
   const router = useRouter()
+  const [isPending, startTransition] = useTransition()
   const [type, setType] = useState<'INCOME' | 'EXPENSE'>('EXPENSE')
   const [installments, setInstallments] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -36,11 +38,16 @@ export function NewTransactionModal({
     const result = await createTransaction(formData)
 
     if (result.success) {
-      router.refresh()
-      onClose()
+      // Reset form first
       setType('EXPENSE')
       setInstallments(1)
       ;(e.target as HTMLFormElement).reset()
+      onClose()
+      
+      // Then refresh in a transition
+      startTransition(() => {
+        router.refresh()
+      })
     }
 
     setIsSubmitting(false)
@@ -134,19 +141,19 @@ export function NewTransactionModal({
         </div>
 
         {/* Parcelas */}
-        <Input
-          name="installments"
+        <NumberInput
           label="Número de Parcelas"
-          type="number"
-          min="1"
           value={installments}
-          onChange={(e) => setInstallments(parseInt(e.target.value) || 1)}
+          onChange={setInstallments}
+          min={1}
+          max={120}
           helper={
             installments > 1
               ? `Serão criadas ${installments} parcelas com intervalo de 30 dias`
               : undefined
           }
         />
+        <input type="hidden" name="installments" value={installments} />
 
         {/* Categoria */}
         <div className="space-y-2">
@@ -165,8 +172,8 @@ export function NewTransactionModal({
         </div>
 
         {/* Botão Salvar */}
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? 'Salvando...' : 'Salvar'}
+        <Button type="submit" className="w-full" disabled={isSubmitting || isPending}>
+          {isSubmitting || isPending ? 'Salvando...' : 'Salvar'}
         </Button>
       </form>
     </Modal>

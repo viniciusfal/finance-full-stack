@@ -25,11 +25,11 @@ export function Input({
   return (
     <div className="flex flex-col gap-2">
       {label && (
-        <label className="text-sm font-medium text-gray-700">{label}</label>
+        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
       )}
       <div className="relative">
         {leftIcon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
             {leftIcon}
           </div>
         )}
@@ -38,6 +38,8 @@ export function Input({
             'w-full rounded-lg border border-gray-300 bg-white px-3 py-3.5 text-base',
             'placeholder:text-gray-400',
             'focus:outline-none focus:ring-2 focus:ring-brand-base focus:border-transparent',
+            'dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500',
+            'dark:focus:ring-green-500',
             {
               'pl-10': leftIcon,
               'pr-10': rightIcon,
@@ -50,15 +52,15 @@ export function Input({
           {...props}
         />
         {rightIcon && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
             {rightIcon}
           </div>
         )}
       </div>
       {helper && !error && (
-        <p className="text-xs text-gray-500">{helper}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">{helper}</p>
       )}
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-red-500 dark:text-red-400">{error}</p>}
     </div>
   )
 }

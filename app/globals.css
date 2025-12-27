@@ -7,9 +7,15 @@
   --background-rgb: 248, 249, 250;
 }
 
+.dark {
+  --foreground-rgb: 248, 250, 252;
+  --background-rgb: 15, 23, 42;
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 @layer utilities {

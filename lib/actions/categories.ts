@@ -19,8 +19,10 @@ export async function createCategory(formData: FormData) {
       },
     })
 
-    revalidatePath('/categorias')
-    revalidatePath('/')
+    // Revalidar todas as rotas que podem mostrar categorias
+    revalidatePath('/categorias', 'page')
+    revalidatePath('/', 'layout')
+    revalidatePath('/transacoes', 'page')
     return { success: true }
   } catch (error) {
     console.error('Erro ao criar categoria:', error)
@@ -34,8 +36,10 @@ export async function deleteCategory(id: string) {
       where: { id },
     })
 
-    revalidatePath('/categorias')
-    revalidatePath('/')
+    // Revalidar todas as rotas que podem mostrar categorias
+    revalidatePath('/categorias', 'page')
+    revalidatePath('/', 'layout')
+    revalidatePath('/transacoes', 'page')
     return { success: true }
   } catch (error) {
     console.error('Erro ao deletar categoria:', error)

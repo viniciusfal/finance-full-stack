@@ -50,6 +50,7 @@ model Transaction {
   amount            Int             // Valor em centavos
   type              TransactionType // INCOME ou EXPENSE
   date              DateTime
+  settled           Boolean         @default(false) // Se a transação foi liquidada (paga)
   categoryId        String?
   category          Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   userId            String?
@@ -69,6 +70,7 @@ model Transaction {
   @@index([userId, date])
   @@index([categoryId])
   @@index([date])
+  @@index([settled])
   @@map("transactions")
 }
 

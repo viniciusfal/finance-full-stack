@@ -25,8 +25,8 @@ export function Button({
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-base',
         {
           // Variants
-          'bg-brand-base text-white hover:bg-brand-base/90': variant === 'solid',
-          'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50':
+          'bg-brand-base text-white hover:bg-brand-base/90 dark:bg-green-600 dark:hover:bg-green-700': variant === 'solid',
+          'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700':
             variant === 'outline',
           // Sizes
           'px-3 py-2 text-sm': size === 'sm',

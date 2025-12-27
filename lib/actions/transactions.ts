@@ -79,12 +79,42 @@ export async function createTransaction(formData: FormData) {
       })
     }
 
-    revalidatePath('/')
-    revalidatePath('/transacoes')
+    // Revalidar todas as rotas que podem mostrar transações
+    revalidatePath('/', 'layout')
+    revalidatePath('/transacoes', 'page')
     return { success: true }
   } catch (error) {
     console.error('Erro ao criar transação:', error)
     return { success: false, error: 'Erro ao criar transação' }
+  }
+}
+
+export async function updateTransaction(id: string, formData: FormData) {
+  try {
+    const description = formData.get('description') as string
+    const amount = parseFloat(formData.get('amount') as string)
+    const type = formData.get('type') as 'INCOME' | 'EXPENSE'
+    const date = new Date(formData.get('date') as string)
+    const categoryId = formData.get('categoryId') as string | null
+
+    await prisma.transaction.update({
+      where: { id },
+      data: {
+        description,
+        amount: toCents(amount),
+        type,
+        date,
+        categoryId: categoryId || null,
+      },
+    })
+
+    // Revalidar todas as rotas que podem mostrar transações
+    revalidatePath('/', 'layout')
+    revalidatePath('/transacoes', 'page')
+    return { success: true }
+  } catch (error) {
+    console.error('Erro ao atualizar transação:', error)
+    return { success: false, error: 'Erro ao atualizar transação' }
   }
 }
 
@@ -94,12 +124,56 @@ export async function deleteTransaction(id: string) {
       where: { id },
     })
 
-    revalidatePath('/')
-    revalidatePath('/transacoes')
+    // Revalidar todas as rotas que podem mostrar transações
+    revalidatePath('/', 'layout')
+    revalidatePath('/transacoes', 'page')
     return { success: true }
   } catch (error) {
     console.error('Erro ao deletar transação:', error)
     return { success: false, error: 'Erro ao deletar transação' }
+  }
+}
+
+export async function getTransaction(id: string) {
+  try {
+    const transaction = await prisma.transaction.findUnique({
+      where: { id },
+      include: {
+        category: true,
+      },
+    })
+    return transaction
+  } catch (error) {
+    console.error('Erro ao buscar transação:', error)
+    return null
+  }
+}
+
+export async function toggleTransactionSettlement(id: string) {
+  try {
+    const transaction = await prisma.transaction.findUnique({
+      where: { id },
+      select: { settled: true },
+    })
+
+    if (!transaction) {
+      return { success: false, error: 'Transação não encontrada' }
+    }
+
+    await prisma.transaction.update({
+      where: { id },
+      data: {
+        settled: !transaction.settled,
+      },
+    })
+
+    // Revalidar todas as rotas que podem mostrar transações
+    revalidatePath('/', 'layout')
+    revalidatePath('/transacoes', 'page')
+    return { success: true }
+  } catch (error) {
+    console.error('Erro ao alternar liquidação:', error)
+    return { success: false, error: 'Erro ao alternar liquidação' }
   }
 }
 
