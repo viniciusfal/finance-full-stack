@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useTransition } from 'react'
+import { useState, useEffect, useTransition, useMemo } from 'react'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { Wallet, ArrowUpCircle, ArrowDownCircle } from 'lucide-react'
 import { Tag } from '@/components/ui/tag'
@@ -50,7 +50,6 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
   })
 
   useEffect(() => {
-    // Recarregar dados quando o modo mudar
     fetch(`/api/dashboard?mode=${mode}`)
       .then((res) => res.json())
       .then((newData) => {
@@ -78,20 +77,21 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
     }
   }
 
-  const filteredTransactions =
-    mode === 'settled'
-      ? (data.recentTransactions || []).filter((t) => t.settled)
-      : (data.recentTransactions || [])
+  const filteredTransactions = useMemo(() => {
+    const transactions = data.recentTransactions || []
+    if (mode === 'settled') {
+      return transactions.filter((t) => t?.settled === true)
+    }
+    return transactions
+  }, [data.recentTransactions, mode])
 
   return (
     <div className="mx-auto max-w-7xl px-12 py-12">
-      {/* Toggle de Modo */}
       <div className="mb-6 flex justify-end">
         <SettlementToggle mode={mode} onModeChange={setMode} />
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        {/* Card Saldo Total */}
         <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
           <div className="mb-4 flex items-center gap-2">
             <Wallet className="h-5 w-5 text-gray-500 dark:text-gray-400" />
@@ -104,7 +104,6 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
           </p>
         </div>
 
-        {/* Card Receitas */}
         <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
           <div className="mb-4 flex items-center gap-2">
             <ArrowUpCircle className="h-5 w-5 text-gray-500 dark:text-gray-400" />
@@ -117,7 +116,6 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
           </p>
         </div>
 
-        {/* Card Despesas */}
         <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
           <div className="mb-4 flex items-center gap-2">
             <ArrowDownCircle className="h-5 w-5 text-gray-500 dark:text-gray-400" />
@@ -132,7 +130,6 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Transações Recentes */}
         <div className="rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
           <div className="flex items-center justify-between border-b border-gray-200 px-6 py-5 dark:border-gray-800">
             <h3 className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
@@ -191,13 +188,7 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
                       />
                     )}
                     <div className="flex items-center gap-2">
-                      <span
-                        className={`text-sm font-semibold ${
-                          transaction.type === 'INCOME'
-                            ? 'text-gray-800 dark:text-gray-100'
-                            : 'text-gray-800 dark:text-gray-100'
-                        }`}
-                      >
+                      <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
                         {transaction.type === 'INCOME' ? '+' : '-'}{' '}
                         {formatCurrency(transaction.amount)}
                       </span>
@@ -251,7 +242,6 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
           </div>
         </div>
 
-        {/* Categorias */}
         <div className="rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
           <div className="flex items-center justify-between border-b border-gray-200 px-6 py-5 dark:border-gray-800">
             <h3 className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
@@ -268,28 +258,28 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
               </div>
             ) : (
               data.topCategories.map((category) => (
-              <div
-                key={category.id}
-                className="flex items-center justify-between py-4 first:pt-0 last:pb-0"
-              >
-                <Tag
-                  label={category.title}
-                  color={(category.color as any) || 'blue'}
-                />
-                <div className="flex items-center gap-4">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {category._count.transactions} itens
-                  </span>
-                  <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-                    R$ 0,00
-                  </span>
+                <div
+                  key={category.id}
+                  className="flex items-center justify-between py-4 first:pt-0 last:pb-0"
+                >
+                  <Tag
+                    label={category.title}
+                    color={(category.color as any) || 'blue'}
+                  />
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {category._count.transactions} itens
+                    </span>
+                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                      R$ 0,00
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
     </div>
   )
 }
-
