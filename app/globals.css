@@ -4,12 +4,12 @@
 
 :root {
   --foreground-rgb: 17, 24, 39;
-  --background-rgb: 248, 249, 250;
+  --background-rgb: 249, 250, 251;
 }
 
 .dark {
   --foreground-rgb: 248, 250, 252;
-  --background-rgb: 15, 23, 42;
+  --background-rgb: 2, 6, 23;
 }
 
 body {

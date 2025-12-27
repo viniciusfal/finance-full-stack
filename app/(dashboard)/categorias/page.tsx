@@ -35,8 +35,8 @@ export default async function CategoriesPage() {
     <div className="mx-auto max-w-7xl px-12 py-12">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Categorias</h1>
-          <p className="mt-1 text-base text-gray-600">
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Categorias</h1>
+          <p className="mt-1 text-base text-gray-600 dark:text-gray-400">
             Organize suas transações por categorias
           </p>
         </div>
@@ -45,31 +45,31 @@ export default async function CategoriesPage() {
 
       {/* Cards de Estatísticas */}
       <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-3">
-        <div className="rounded-xl border border-gray-200 bg-white p-6">
-          <div className="mb-4 h-8 w-8 rounded-lg bg-gray-200" />
+        <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
+          <div className="mb-4 h-8 w-8 rounded-lg bg-gray-200 dark:bg-gray-700" />
           <div>
-            <p className="text-3xl font-bold text-gray-800">{totalCategories}</p>
-            <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
+            <p className="text-3xl font-bold text-gray-800 dark:text-gray-100">{totalCategories}</p>
+            <p className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
               total de categorias
             </p>
           </div>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-6">
-          <div className="mb-4 h-8 w-8 rounded-lg bg-gray-200" />
+        <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
+          <div className="mb-4 h-8 w-8 rounded-lg bg-gray-200 dark:bg-gray-700" />
           <div>
-            <p className="text-3xl font-bold text-gray-800">{totalTransactions}</p>
-            <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
+            <p className="text-3xl font-bold text-gray-800 dark:text-gray-100">{totalTransactions}</p>
+            <p className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
               total de transações
             </p>
           </div>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-6">
-          <div className="mb-4 h-8 w-8 rounded-lg bg-gray-200" />
+        <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
+          <div className="mb-4 h-8 w-8 rounded-lg bg-gray-200 dark:bg-gray-700" />
           <div>
-            <p className="text-3xl font-bold text-gray-800">
+            <p className="text-3xl font-bold text-gray-800 dark:text-gray-100">
               {mostUsedCategory.title}
             </p>
-            <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
+            <p className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
               categoria mais utilizada
             </p>
           </div>
@@ -81,15 +81,15 @@ export default async function CategoriesPage() {
         {categories.map((category) => (
           <div
             key={category.id}
-            className="rounded-xl border border-gray-200 bg-white p-6"
+            className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900"
           >
-            <div className="mb-4 h-12 w-12 rounded-lg bg-gray-200" />
+            <div className="mb-4 h-12 w-12 rounded-lg bg-gray-200 dark:bg-gray-700" />
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                 {category.title}
               </h3>
               {category.description && (
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                   {category.description}
                 </p>
               )}
@@ -99,7 +99,7 @@ export default async function CategoriesPage() {
                 label={category.title}
                 color={(category.color as any) || 'blue'}
               />
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-gray-600 dark:text-gray-400">
                 {category._count.transactions} itens
               </span>
             </div>

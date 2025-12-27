@@ -21,8 +21,8 @@ export default async function GoalsPage() {
     <div className="mx-auto max-w-7xl px-12 py-12">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Metas Financeiras</h1>
-          <p className="mt-1 text-base text-gray-600">
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Metas Financeiras</h1>
+          <p className="mt-1 text-base text-gray-600 dark:text-gray-400">
             Acompanhe suas metas e objetivos financeiros
           </p>
         </div>
@@ -33,8 +33,8 @@ export default async function GoalsPage() {
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {goals.length === 0 ? (
-          <div className="col-span-full rounded-xl border border-gray-200 bg-white p-12 text-center">
-            <p className="text-gray-500">Nenhuma meta cadastrada</p>
+          <div className="col-span-full rounded-xl border border-gray-200 bg-white p-12 text-center dark:border-gray-800 dark:bg-gray-900">
+            <p className="text-gray-500 dark:text-gray-400">Nenhuma meta cadastrada</p>
           </div>
         ) : (
           goals.map((goal) => {
@@ -45,53 +45,53 @@ export default async function GoalsPage() {
             return (
               <div
                 key={goal.id}
-                className="rounded-xl border border-gray-200 bg-white p-6"
+                className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900"
               >
-                <h3 className="text-lg font-semibold text-gray-800">{goal.title}</h3>
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{goal.title}</h3>
                 {goal.description && (
-                  <p className="mt-1 text-sm text-gray-600">{goal.description}</p>
+                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{goal.description}</p>
                 )}
 
                 <div className="mt-4">
                   <div className="mb-2 flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Progresso</span>
-                    <span className="font-semibold text-gray-800">
+                    <span className="text-gray-600 dark:text-gray-400">Progresso</span>
+                    <span className="font-semibold text-gray-800 dark:text-gray-100">
                       {progress.toFixed(0)}%
                     </span>
                   </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                     <div
                       className={`h-full transition-all ${
                         isCompleted
-                          ? 'bg-green-base'
+                          ? 'bg-green-base dark:bg-green-500'
                           : isExpired
-                          ? 'bg-red-base'
-                          : 'bg-brand-base'
+                          ? 'bg-red-base dark:bg-red-500'
+                          : 'bg-brand-base dark:bg-green-600'
                       }`}
                       style={{ width: `${Math.min(progress, 100)}%` }}
                     />
                   </div>
                   <div className="mt-2 flex items-center justify-between text-sm">
-                    <span className="text-gray-600">
+                    <span className="text-gray-600 dark:text-gray-400">
                       {formatCurrency(goal.currentAmount)}
                     </span>
-                    <span className="font-semibold text-gray-800">
+                    <span className="font-semibold text-gray-800 dark:text-gray-100">
                       {formatCurrency(goal.targetAmount)}
                     </span>
                   </div>
                 </div>
 
-                <div className="mt-4 text-sm text-gray-600">
+                <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
                   <p>Prazo: {formatDate(goal.targetDate)}</p>
                   <p className="mt-1">
                     Status:{' '}
                     <span
                       className={`font-medium ${
                         isCompleted
-                          ? 'text-green-dark'
+                          ? 'text-green-dark dark:text-green-400'
                           : isExpired
-                          ? 'text-red-dark'
-                          : 'text-brand-base'
+                          ? 'text-red-dark dark:text-red-400'
+                          : 'text-brand-base dark:text-green-400'
                       }`}
                     >
                       {goal.status === 'COMPLETED'

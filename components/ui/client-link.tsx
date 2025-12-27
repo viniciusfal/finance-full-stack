@@ -23,7 +23,7 @@ export function ClientLink({
     <NextLink
       href={href}
       className={cn(
-        'inline-flex items-center gap-1 text-sm font-medium text-brand-base hover:underline',
+        'inline-flex items-center gap-1 text-sm font-medium text-brand-base hover:underline dark:text-green-400',
         className
       )}
       {...props}
