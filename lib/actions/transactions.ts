@@ -24,7 +24,7 @@ export async function createTransaction(formData: FormData) {
         data: {
           description,
           totalAmount,
-          installments,
+          numberOfInstallments: installments,
           firstDueDate: date,
         },
       })
