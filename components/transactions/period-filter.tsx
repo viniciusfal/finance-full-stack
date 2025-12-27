@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, Suspense, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { generateAvailablePeriods } from '@/lib/utils'
 
@@ -14,7 +14,19 @@ function PeriodFilterContent({ defaultPeriod }: PeriodFilterProps) {
   const [periods, setPeriods] = useState<Array<{ label: string; value: string }>>([])
   const [selectedPeriod, setSelectedPeriod] = useState(defaultPeriod || searchParams.get('period') || '')
 
+  const updateURL = useCallback((period: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (period) {
+      params.set('period', period)
+    } else {
+      params.delete('period')
+    }
+    router.push(`/transacoes?${params.toString()}`)
+  }, [searchParams, router])
+
   useEffect(() => {
+    const initialPeriod = defaultPeriod || searchParams.get('period') || ''
+    
     // Buscar transações para determinar o range de datas
     fetch('/api/transactions/periods')
       .then((res) => res.json())
@@ -27,7 +39,7 @@ function PeriodFilterContent({ defaultPeriod }: PeriodFilterProps) {
           setPeriods(availablePeriods.map((p) => ({ label: p.label, value: p.value })))
           
           // Se não houver período selecionado, usar o mais recente
-          if (!selectedPeriod && availablePeriods.length > 0) {
+          if (!initialPeriod && availablePeriods.length > 0) {
             const currentPeriod = availablePeriods[0].value
             setSelectedPeriod(currentPeriod)
             updateURL(currentPeriod)
@@ -39,7 +51,7 @@ function PeriodFilterContent({ defaultPeriod }: PeriodFilterProps) {
           const availablePeriods = generateAvailablePeriods(startDate, now)
           setPeriods(availablePeriods.map((p) => ({ label: p.label, value: p.value })))
           
-          if (!selectedPeriod && availablePeriods.length > 0) {
+          if (!initialPeriod && availablePeriods.length > 0) {
             const currentPeriod = availablePeriods[0].value
             setSelectedPeriod(currentPeriod)
             updateURL(currentPeriod)
@@ -53,23 +65,13 @@ function PeriodFilterContent({ defaultPeriod }: PeriodFilterProps) {
         const availablePeriods = generateAvailablePeriods(startDate, now)
         setPeriods(availablePeriods.map((p) => ({ label: p.label, value: p.value })))
         
-        if (!selectedPeriod && availablePeriods.length > 0) {
+        if (!initialPeriod && availablePeriods.length > 0) {
           const currentPeriod = availablePeriods[0].value
           setSelectedPeriod(currentPeriod)
           updateURL(currentPeriod)
         }
       })
-  }, [])
-
-  function updateURL(period: string) {
-    const params = new URLSearchParams(searchParams.toString())
-    if (period) {
-      params.set('period', period)
-    } else {
-      params.delete('period')
-    }
-    router.push(`/transacoes?${params.toString()}`)
-  }
+  }, [defaultPeriod, searchParams, updateURL])
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const period = e.target.value

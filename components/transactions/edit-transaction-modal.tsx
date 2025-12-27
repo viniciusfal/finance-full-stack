@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useTransition } from 'react'
+import { useState, useEffect, useTransition, useCallback } from 'react'
 import { Modal } from '@/components/ui/modal'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -34,13 +34,7 @@ export function EditTransactionModal({
     categoryId: '',
   })
 
-  useEffect(() => {
-    if (isOpen && transactionId) {
-      loadTransaction()
-    }
-  }, [isOpen, transactionId])
-
-  async function loadTransaction() {
+  const loadTransaction = useCallback(async () => {
     setIsLoading(true)
     const transaction = await getTransaction(transactionId)
     if (transaction) {
@@ -53,7 +47,13 @@ export function EditTransactionModal({
       })
     }
     setIsLoading(false)
-  }
+  }, [transactionId])
+
+  useEffect(() => {
+    if (isOpen && transactionId) {
+      loadTransaction()
+    }
+  }, [isOpen, transactionId, loadTransaction])
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
