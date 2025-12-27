@@ -1,0 +1,170 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:fuTjLCHygdFJTpRARveKdgGtkwFOzpgc@mainline.proxy.rlwy.net:18337/railway"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions         Transaction[]
+  categories           Category[]
+  recurringTransactions RecurringTransaction[]
+  financialGoals       FinancialGoal[]
+
+  @@map("users")
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  icon        String?
+  color       String   // blue, purple, orange, green, pink, yellow, red
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  transactions         Transaction[]
+  recurringTransactions RecurringTransaction[]
+
+  @@map("categories")
+}
+
+model Transaction {
+  id                String          @id @default(cuid())
+  description       String
+  amount            Int             // Valor em centavos
+  type              TransactionType // INCOME ou EXPENSE
+  date              DateTime
+  categoryId        String?
+  category          Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  userId            String?
+  user              User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Relacionamentos para parcelamento
+  installmentId     String?
+  installment       Installment?    @relation(fields: [installmentId], references: [id], onDelete: SetNull)
+  
+  // Relacionamento para metas
+  financialGoalId   String?
+  financialGoal     FinancialGoal?  @relation(fields: [financialGoalId], references: [id], onDelete: SetNull)
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([userId, date])
+  @@index([categoryId])
+  @@index([date])
+  @@map("transactions")
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+model InstallmentPlan {
+  id            String       @id @default(cuid())
+  description   String
+  totalAmount   Int          // Valor total em centavos
+  installments  Int          // Número total de parcelas
+  firstDueDate  DateTime     // Data da primeira parcela
+  userId        String?
+  user          User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  installments  Installment[]
+
+  @@map("installment_plans")
+}
+
+model Installment {
+  id                String       @id @default(cuid())
+  installmentPlanId String
+  installmentPlan   InstallmentPlan @relation(fields: [installmentPlanId], references: [id], onDelete: Cascade)
+  number            Int          // Número da parcela (1, 2, 3...)
+  amount            Int          // Valor da parcela em centavos
+  dueDate           DateTime     // Data de vencimento
+  paid              Boolean      @default(false)
+  paidAt            DateTime?
+  userId            String?
+  user              User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  transaction       Transaction?
+
+  @@index([installmentPlanId])
+  @@index([dueDate])
+  @@map("installments")
+}
+
+model RecurringTransaction {
+  id            String          @id @default(cuid())
+  description   String
+  amount        Int             // Valor em centavos
+  type          TransactionType
+  categoryId    String?
+  category      Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  frequency     RecurrenceFrequency
+  startDate     DateTime
+  endDate       DateTime?
+  nextDueDate   DateTime
+  userId        String?
+  user          User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  active        Boolean          @default(true)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([userId, nextDueDate])
+  @@index([active])
+  @@map("recurring_transactions")
+}
+
+enum RecurrenceFrequency {
+  DAILY
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+model FinancialGoal {
+  id            String        @id @default(cuid())
+  title         String
+  description   String?
+  targetAmount  Int           // Valor alvo em centavos
+  currentAmount Int           @default(0) // Valor atual em centavos
+  targetDate    DateTime
+  status        GoalStatus    @default(IN_PROGRESS)
+  userId        String?
+  user          User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  transactions  Transaction[]
+
+  @@index([userId, status])
+  @@map("financial_goals")
+}
+
+enum GoalStatus {
+  IN_PROGRESS
+  COMPLETED
+  EXPIRED
+}
+
