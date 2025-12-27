@@ -21,16 +21,33 @@ export async function GET(request: Request) {
       where.settled = true
     }
 
-    const transactions = await prisma.transaction.findMany({
-      where,
-      include: {
-        category: true,
-      },
-      orderBy: {
-        date: 'desc',
-      },
-      take: 5,
-    })
+    const [transactions, categories] = await Promise.all([
+      prisma.transaction.findMany({
+        where,
+        include: {
+          category: true,
+        },
+        orderBy: {
+          date: 'desc',
+        },
+        take: 5,
+      }),
+      prisma.category.findMany({
+        include: {
+          _count: {
+            select: {
+              transactions: true,
+            },
+          },
+        },
+        orderBy: {
+          transactions: {
+            _count: 'desc',
+          },
+        },
+        take: 5,
+      }),
+    ])
 
     const totalIncome = transactions
       .filter((t) => t.type === 'INCOME')
@@ -50,6 +67,7 @@ export async function GET(request: Request) {
         ...t,
         date: t.date.toISOString(),
       })),
+      topCategories: categories,
     })
   } catch (error) {
     console.error('Erro ao buscar dados do dashboard:', error)

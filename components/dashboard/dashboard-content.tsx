@@ -41,14 +41,28 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [mode, setMode] = useState<'all' | 'settled'>('all')
-  const [data, setData] = useState(initialData)
+  const [data, setData] = useState({
+    balance: initialData?.balance || 0,
+    totalIncome: initialData?.totalIncome || 0,
+    totalExpense: initialData?.totalExpense || 0,
+    recentTransactions: initialData?.recentTransactions || [],
+    topCategories: initialData?.topCategories || [],
+  })
 
   useEffect(() => {
     // Recarregar dados quando o modo mudar
     fetch(`/api/dashboard?mode=${mode}`)
       .then((res) => res.json())
       .then((newData) => {
-        setData(newData)
+        if (newData) {
+          setData({
+            balance: newData.balance || 0,
+            totalIncome: newData.totalIncome || 0,
+            totalExpense: newData.totalExpense || 0,
+            recentTransactions: newData.recentTransactions || [],
+            topCategories: newData.topCategories || [],
+          })
+        }
       })
       .catch(() => {
         // Em caso de erro, manter dados iniciais
@@ -66,8 +80,8 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
 
   const filteredTransactions =
     mode === 'settled'
-      ? data.recentTransactions.filter((t) => t.settled)
-      : data.recentTransactions
+      ? (data.recentTransactions || []).filter((t) => t.settled)
+      : (data.recentTransactions || [])
 
   return (
     <div className="mx-auto max-w-7xl px-12 py-12">
@@ -129,7 +143,7 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
             </ClientLink>
           </div>
           <div className="divide-y divide-gray-200 dark:divide-gray-800">
-            {filteredTransactions.length === 0 ? (
+            {!filteredTransactions || filteredTransactions.length === 0 ? (
               <div className="p-6 text-center text-sm text-gray-500 dark:text-gray-400">
                 Nenhuma transação encontrada
               </div>
@@ -248,7 +262,12 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
             </ClientLink>
           </div>
           <div className="divide-y divide-gray-200 px-6 py-6 dark:divide-gray-800">
-            {data.topCategories.map((category) => (
+            {(!data.topCategories || data.topCategories.length === 0) ? (
+              <div className="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                Nenhuma categoria encontrada
+              </div>
+            ) : (
+              data.topCategories.map((category) => (
               <div
                 key={category.id}
                 className="flex items-center justify-between py-4 first:pt-0 last:pb-0"
