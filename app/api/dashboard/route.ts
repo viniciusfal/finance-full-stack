@@ -7,10 +7,22 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const mode = searchParams.get('mode') || 'all'
+    const period = searchParams.get('period')
 
-    const now = new Date()
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+    let startOfMonth: Date
+    let endOfMonth: Date
+
+    if (period) {
+      // Formato: YYYY-MM
+      const [year, month] = period.split('-').map(Number)
+      startOfMonth = new Date(year, month - 1, 1)
+      endOfMonth = new Date(year, month, 0, 23, 59, 59)
+    } else {
+      // Usar mês atual como padrão
+      const now = new Date()
+      startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+      endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59)
+    }
 
     const where: any = {
       date: {
@@ -36,18 +48,15 @@ export async function GET(request: Request) {
       }),
       prisma.category.findMany({
         include: {
-          _count: {
-            select: {
-              transactions: true,
+          transactions: {
+            where: {
+              date: {
+                gte: startOfMonth,
+                lte: endOfMonth,
+              },
             },
           },
         },
-        orderBy: {
-          transactions: {
-            _count: 'desc',
-          },
-        },
-        take: 5,
       }),
     ])
 
@@ -61,6 +70,19 @@ export async function GET(request: Request) {
 
     const balance = totalIncome - totalExpense
 
+    // Filtrar e ordenar categorias por número de transações no período
+    const topCategories = categories
+      .map((category) => ({
+        ...category,
+        _count: {
+          transactions: category.transactions.length,
+        },
+      }))
+      .filter((category) => category._count.transactions > 0)
+      .sort((a, b) => b._count.transactions - a._count.transactions)
+      .slice(0, 5)
+      .map(({ transactions, ...category }) => category)
+
     return NextResponse.json({
       balance,
       totalIncome,
@@ -69,7 +91,7 @@ export async function GET(request: Request) {
         ...t,
         date: t.date.toISOString(),
       })),
-      topCategories: categories,
+      topCategories,
     })
   } catch (error) {
     console.error('Erro ao buscar dados do dashboard:', error)

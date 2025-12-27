@@ -25,6 +25,7 @@ export function NewTransactionModal({
   const [isPending, startTransition] = useTransition()
   const [type, setType] = useState<'INCOME' | 'EXPENSE'>('EXPENSE')
   const [installments, setInstallments] = useState(1)
+  const [isRecurring, setIsRecurring] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -34,6 +35,7 @@ export function NewTransactionModal({
     const formData = new FormData(e.currentTarget)
     formData.append('type', type)
     formData.append('installments', installments.toString())
+    formData.append('isRecurring', isRecurring.toString())
 
     const result = await createTransaction(formData)
 
@@ -41,6 +43,7 @@ export function NewTransactionModal({
       // Reset form first
       setType('EXPENSE')
       setInstallments(1)
+      setIsRecurring(false)
       ;(e.target as HTMLFormElement).reset()
       onClose()
       
@@ -65,7 +68,9 @@ export function NewTransactionModal({
         <div className="flex gap-2 rounded-xl border border-gray-200 p-2">
           <button
             type="button"
-            onClick={() => setType('EXPENSE')}
+            onClick={() => {
+              setType('EXPENSE')
+            }}
             className={`flex flex-1 items-center justify-center gap-3 rounded-lg px-3 py-3.5 transition-colors ${
               type === 'EXPENSE'
                 ? 'bg-gray-100 border border-red-base'
@@ -89,7 +94,10 @@ export function NewTransactionModal({
           </button>
           <button
             type="button"
-            onClick={() => setType('INCOME')}
+            onClick={() => {
+              setType('INCOME')
+              setIsRecurring(false) // Despesa fixa só funciona para despesas
+            }}
             className={`flex flex-1 items-center justify-center gap-3 rounded-lg px-3 py-3.5 transition-colors ${
               type === 'INCOME'
                 ? 'bg-gray-100'
@@ -140,27 +148,34 @@ export function NewTransactionModal({
           />
         </div>
 
-        {/* Parcelas */}
-        <NumberInput
-          label="Número de Parcelas"
-          value={installments}
-          onChange={setInstallments}
-          min={1}
-          max={120}
-          helper={
-            installments > 1
-              ? `Serão criadas ${installments} parcelas com intervalo de 30 dias`
-              : undefined
-          }
-        />
-        <input type="hidden" name="installments" value={installments} />
+        {/* Parcelas - Desabilitado se for despesa fixa */}
+        {!isRecurring && (
+          <>
+            <NumberInput
+              label="Número de Parcelas"
+              value={installments}
+              onChange={setInstallments}
+              min={1}
+              max={120}
+              helper={
+                installments > 1
+                  ? `Serão criadas ${installments} parcelas com intervalo de 30 dias`
+                  : undefined
+              }
+            />
+            <input type="hidden" name="installments" value={installments} />
+          </>
+        )}
+        {isRecurring && <input type="hidden" name="installments" value="1" />}
 
         {/* Categoria */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">Categoria</label>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Categoria
+          </label>
           <select
             name="categoryId"
-            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3.5 text-base focus:outline-none focus:ring-2 focus:ring-brand-base"
+            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3.5 text-base focus:outline-none focus:ring-2 focus:ring-brand-base dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
           >
             <option value="">Selecione</option>
             {categories.map((category) => (
@@ -170,6 +185,30 @@ export function NewTransactionModal({
             ))}
           </select>
         </div>
+
+        {/* Despesa Fixa - Apenas para despesas */}
+        {type === 'EXPENSE' && (
+          <div className="flex items-center gap-3 rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+            <input
+              type="checkbox"
+              id="isRecurring"
+              checked={isRecurring}
+              onChange={(e) => setIsRecurring(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-brand-base focus:ring-2 focus:ring-brand-base dark:border-gray-600 dark:bg-gray-800"
+            />
+            <label
+              htmlFor="isRecurring"
+              className="flex-1 cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Despesa Fixa
+            </label>
+            {isRecurring && (
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                Esta despesa será criada automaticamente todo mês na mesma data
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Botão Salvar */}
         <Button type="submit" className="w-full" disabled={isSubmitting || isPending}>

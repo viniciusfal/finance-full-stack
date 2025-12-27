@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { toCents } from '@/lib/utils'
-import { addDays } from 'date-fns'
+import { addDays, addMonths } from 'date-fns'
 
 export async function createTransaction(formData: FormData) {
   try {
@@ -13,6 +13,43 @@ export async function createTransaction(formData: FormData) {
     const date = new Date(formData.get('date') as string)
     const categoryId = formData.get('categoryId') as string | null
     const installments = parseInt(formData.get('installments') as string) || 1
+    const isRecurring = formData.get('isRecurring') === 'true'
+
+    // Se for despesa fixa recorrente, criar RecurringTransaction
+    if (isRecurring && type === 'EXPENSE') {
+      const dayOfMonth = date.getDate()
+      const nextDueDate = addMonths(date, 1)
+      nextDueDate.setDate(dayOfMonth)
+
+      await prisma.recurringTransaction.create({
+        data: {
+          description,
+          amount: toCents(amount),
+          type: 'EXPENSE',
+          categoryId: categoryId || undefined,
+          frequency: 'MONTHLY',
+          startDate: date,
+          nextDueDate,
+          active: true,
+        },
+      })
+
+      // Criar a primeira transação do mês atual
+      await prisma.transaction.create({
+        data: {
+          description,
+          amount: toCents(amount),
+          type: 'EXPENSE',
+          date,
+          categoryId: categoryId || undefined,
+        },
+      })
+
+      // Revalidar todas as rotas que podem mostrar transações
+      revalidatePath('/', 'layout')
+      revalidatePath('/transacoes', 'page')
+      return { success: true }
+    }
 
     if (installments > 1) {
       // Criar plano de parcelamento

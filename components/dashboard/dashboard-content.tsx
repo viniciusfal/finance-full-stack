@@ -9,6 +9,7 @@ import { ChevronRight, Plus } from 'lucide-react'
 import { SettlementToggle } from '@/components/ui/settlement-toggle'
 import { toggleTransactionSettlement } from '@/lib/actions/transactions'
 import { useRouter } from 'next/navigation'
+import { DashboardPeriodFilter } from './period-filter'
 
 interface DashboardContentProps {
   initialData: {
@@ -41,6 +42,7 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [mode, setMode] = useState<'all' | 'settled'>('all')
+  const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null)
   const [data, setData] = useState({
     balance: initialData?.balance || 0,
     totalIncome: initialData?.totalIncome || 0,
@@ -50,7 +52,13 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
   })
 
   useEffect(() => {
-    fetch(`/api/dashboard?mode=${mode}`)
+    const params = new URLSearchParams()
+    params.set('mode', mode)
+    if (selectedPeriod) {
+      params.set('period', selectedPeriod)
+    }
+
+    fetch(`/api/dashboard?${params.toString()}`)
       .then((res) => res.json())
       .then((newData) => {
         if (newData) {
@@ -66,7 +74,7 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
       .catch(() => {
         // Em caso de erro, manter dados iniciais
       })
-  }, [mode])
+  }, [mode, selectedPeriod])
 
   async function handleToggleSettlement(transactionId: string) {
     const result = await toggleTransactionSettlement(transactionId)
@@ -87,7 +95,13 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
 
   return (
     <div className="mx-auto max-w-7xl px-12 py-12">
-      <div className="mb-6 flex justify-end">
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <div className="w-48">
+          <DashboardPeriodFilter
+            onPeriodChange={setSelectedPeriod}
+            defaultPeriod={null}
+          />
+        </div>
         <SettlementToggle mode={mode} onModeChange={setMode} />
       </div>
 
